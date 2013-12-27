@@ -1,16 +1,16 @@
+// exifsorter reads images (jpg) from a directory, sorts them ascending by
+// their exif creation date and renames them according to a specified prefix.
 package main
 
 import (
 	"flag"
 	"fmt"
-	"github.com/rwcarlsen/goexif/exif"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
-	"time"
 )
 
 var (
@@ -18,38 +18,12 @@ var (
 	p   string
 )
 
-//--------------------------------------------------------------------------
-
 func init() {
-	flag.StringVar(&dir, "dir", "", "Source directory of your images")
-	flag.StringVar(&p, "p", "image", "Prefix of the renamed files")
+	// Parse the flags.
+	flag.StringVar(&dir, "dir", "", "Directory of the images to sort")
+	flag.StringVar(&p, "p", "", "Prefix of the renamed files")
 	flag.Parse()
 }
-
-//--------------------------------------------------------------------------
-
-// Image contains the file information and the date of the .
-type Image struct {
-	FileInfo os.FileInfo
-	Date     time.Time
-}
-
-// Images is a slice of Image and implements the sorter interface.
-type Images []Image
-
-func (i Images) Len() int {
-	return len(i)
-}
-
-func (i Images) Swap(x, y int) {
-	i[x], i[y] = i[y], i[x]
-}
-
-func (i Images) Less(x, y int) bool {
-	return i[x].Date.Before(i[y].Date)
-}
-
-//--------------------------------------------------------------------------
 
 func main() {
 	// If dir is empty, use the current working directory.
@@ -57,26 +31,29 @@ func main() {
 		dir, _ = os.Getwd()
 	}
 
-	// If prefix is ommited, use 'image'.
+	// If prefix is empty, ask for it.
 	if p == "" {
-		p = "image"
+		fmt.Print("Enter prefix: ")
+		_, err := fmt.Scanf("%s", &p)
+		if err != nil {
+			log.Fatalf("Error reading from stdin: %v", err)
+		}
 	}
 
-	// Read the source directory (the result is sorted alphanumeric)
+	// Read the source directory (the result is sorted alphanumerically)
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
-		log.Fatalf("Error reading directory '%v': %v", dir, err)
+		log.Fatalf("Error reading directory '%s': %v", dir, err)
 	}
 
 	images := Images{}
 
+	// Get all jpeg files of dir and their exif creation date.
 	for _, f := range files {
-		ext := strings.ToLower(filepath.Ext(f.Name()))
+		ext := getExt(f.Name())
 
 		if ext == ".jpg" || ext == ".jpeg" {
-			image := Image{FileInfo: f}
-
-			image.Date, err = getDate(image.FileInfo)
+			image, err := NewImage(f)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -85,57 +62,52 @@ func main() {
 		}
 	}
 
+	imgCount := len(images)
+	if imgCount == 0 {
+		log.Fatal("No (jpeg) images found.")
+	}
+
+	// Test for possible filename collisions
+	for _, i := range images {
+		checkFilenames(i.FileInfo.Name(), imgCount)
+	}
+
 	// Sort the images ascending by creation date.
 	sort.Sort(images)
 
-	// Rename the images according to the specified format.
+	// Rename the images according to the specified prefix.
 	for idx, i := range images {
-		ext := strings.ToLower(filepath.Ext(i.FileInfo.Name()))
-
+		ext := getExt(i.FileInfo.Name())
 		fOld := filepath.Join(dir, i.FileInfo.Name())
-
-		filename := fmt.Sprintf("scheidegg%v%v", idx+1, ext)
+		filename := createFilename(idx+1, ext)
 		fNew := filepath.Join(dir, filename)
 
 		err := os.Rename(fOld, fNew)
-
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	fmt.Println("ok")
+	fmt.Println("The images have been renamed successfully!")
 }
 
-//--------------------------------------------------------------------------
-
-func getDate(file os.FileInfo) (time.Time, error) {
-	var t time.Time
-
-	path := filepath.Join(dir, file.Name())
-
-	f, err := os.Open(path)
-	if err != nil {
-		return t, err
-	}
-
-	x, err := exif.Decode(f)
-	defer f.Close()
-	if err != nil {
-		return t, err
-	}
-
-	date, err := x.Get(exif.DateTimeOriginal)
-	if err != nil {
-		return t, err
-	}
-
-	t, err = time.Parse("2006:01:02 15:04:05", date.StringVal())
-	if err != nil {
-		return t, err
-	}
-
-	return t, nil
+func getExt(name string) string {
+	return strings.ToLower(filepath.Ext(name))
 }
 
-//--------------------------------------------------------------------------
+func checkFilenames(name string, imgCount int) {
+	ext := getExt(name)
+
+	for i := 0; i < imgCount; i++ {
+		filename := createFilename(i+1, ext)
+
+		if name == filename {
+			log.Fatalf("Possible filename collision with '%s'. "+
+				"Start again and use an other prefix.", name)
+		}
+	}
+}
+
+func createFilename(i int, ext string) string {
+	return fmt.Sprintf("%s%d%s", p, i, ext)
+}
