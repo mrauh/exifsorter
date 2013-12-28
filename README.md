@@ -1,14 +1,16 @@
-# exifsorter
+# Exifsorter
 
-exifsorter reads images (jpg) from a directory, sorts them ascending by
-their exif creation date and renames them according to a specified prefix.
+Exifsorter is a command-line tool to merge and rename images from multiple
+sources, so that you can view them in the order of their creation date. It reads
+images (jpg) from a directory, sorts them ascending by their exif creation date
+and renames them according to a specified prefix.
 
 [![Build Status](https://drone.io/github.com/mrauh/exifsorter/status.png)](https://drone.io/github.com/mrauh/exifsorter/latest)
 
 ## Why / what's the usecase?
 
 Think of the following situation: there is a party and you and some of your
-friends take pictures with their camaras and smartphones. After that, all those
+friends take pictures with your digicams and smartphones. After that, all those
 pictures are shared among each other. Now you have - say 5 - directories on your
 computer with images of yourself and from your friends and you want to watch
 them in the order of their creation date (and not folder after folder).
@@ -19,13 +21,13 @@ to accomplish the right order.
 
 Of course there are "image viewers" that can sort images by their exif creation
 date (e.g. digikam on linux), but there are a lot who can't. Or suppose you
-want to copy the files on a sd card to view them on tv.
+want to copy the files on a sd card to view them on TV.
 
 With exifsorter you can rename all images in a directory after they are sorted
 by their creation date. The result is that the alphabetical order corresponds to
 the exif creation date.
 
-exifsorter is tested on linux, but should also work on the other plattforms
+Exifsorter is tested on linux, but should also work on the other plattforms
 that are supported by Go (e.g. OS X and Windows).
 
 ## Installation
@@ -64,3 +66,9 @@ You can also specify the following flags:
 
 	$ exifsorter -dir="path/to/images" -p="imagesMerged"
 
+## FAQ
+
+1. Why are the images still not in the right order?
+
+Maybe the date from the digicam / smartphone of one of the sources was not
+set correctly at the time the pictures were made.
