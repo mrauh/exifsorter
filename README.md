@@ -7,7 +7,7 @@ and renames them according to a specified prefix.
 
 [![Build Status](https://drone.io/github.com/mrauh/exifsorter/status.png)](https://drone.io/github.com/mrauh/exifsorter/latest)
 
-## Why / what's the usecase?
+## Use case
 
 Think of the following situation: there is a party and you and some of your
 friends take pictures with your digicams and smartphones. After that, all those
@@ -68,7 +68,11 @@ You can also specify the following flags:
 
 ## FAQ
 
-1. Why are the images still not in the right order?
+**Why are the images still not in the right order?**
 
 Maybe the date from the digicam / smartphone of one of the sources was not
 set correctly at the time the pictures were made.
+
+**I get an "EOF" error. What can I do?
+
+Unfortunately nothing. There seems to be a problem with (very) old images.
