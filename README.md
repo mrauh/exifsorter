@@ -73,6 +73,6 @@ You can also specify the following flags:
 Maybe the date from the digicam / smartphone of one of the sources was not
 set correctly at the time the pictures were made.
 
-**I get an "EOF" error. What can I do?
+**I get an "EOF" error. What can I do?**
 
 Unfortunately nothing. There seems to be a problem with (very) old images.
